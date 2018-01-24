@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.media.RingtoneManager
 import android.os.Bundle
+import android.os.SystemClock
 import android.support.design.widget.Snackbar
 import android.support.v4.app.NotificationManagerCompat
 import android.support.v7.app.AppCompatActivity
@@ -33,7 +34,7 @@ class AddEventActivity : AppCompatActivity() {
         setSupportActionBar(toolbar)
 
         eventType!!.onItemSelectedListener = object : OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>, view: View, position: Int, id: Long) {
+            override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
                 // use position to know the selected item
                 //Snackbar.make(view, "You selected :" + listOfItems[position], Snackbar.LENGTH_SHORT).show()
             }
@@ -108,7 +109,7 @@ class AddEventActivity : AppCompatActivity() {
     }
 
     fun scheduleNotification(delay: Long, notificationId: Int, title: String, content: String) {//delay is after how much time(in millis) from current time you want to schedule the notification
-        val notification = NotificationCompat.Builder(this)
+        /*val notification = NotificationCompat.Builder(this)
                 .setSmallIcon(R.drawable.ic_add_black_24dp)
                 .setContentTitle(title)
                 .setContentText(content)
@@ -119,16 +120,18 @@ class AddEventActivity : AppCompatActivity() {
 
         val notificationManagerCompat = NotificationManagerCompat.from(this)
         notificationManagerCompat.notify(0, notification)
-
+*/
         // DOES NOT WORK ???
-        val notificationIntent = Intent(this, MyNotificationPublisher::class.java)
+        val notificationIntent = Intent(applicationContext, MyNotificationPublisher::class.java)
+
+        notificationIntent.putExtra(MyNotificationPublisher.NOTIFICATION_ID, notificationId)
         notificationIntent.putExtra(MyNotificationPublisher.NOTIFICATION_CONTENT, content)
         notificationIntent.putExtra(MyNotificationPublisher.NOTIFICATION_TITLE, title)
 
         Log.d("TEST", notificationIntent.extras.toString())
 
-        val alarmIntent = PendingIntent.getBroadcast(this, 0, notificationIntent, 0)
-        val alarmMgr: AlarmManager = this.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        alarmMgr.setExact(AlarmManager.RTC_WAKEUP, delay, alarmIntent)
+        val pendingIntent = PendingIntent.getBroadcast(applicationContext, notificationId, notificationIntent, 0)
+        val alarmMgr = this.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        alarmMgr.setExact(AlarmManager.RTC_WAKEUP, delay, pendingIntent)
     }
 }

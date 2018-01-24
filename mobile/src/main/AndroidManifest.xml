@@ -28,6 +28,8 @@
             android:name=".DisplayEventActivity"
             android:label="@string/title_activity_display_event"
             android:theme="@style/AppTheme.NoActionBar" />
+
+        <receiver android:name="MyNotificationPublisher" />
     </application>
 
 </manifest>

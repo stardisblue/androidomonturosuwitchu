@@ -143,30 +143,4 @@ class MainActivity : AppCompatActivity() {
             return events.size
         }
     }
-
-
-    fun scheduleNotification(context: Context, delay: Long, notificationId: Int, title: String, content: String) {//delay is after how much time(in millis) from current time you want to schedule the notification
-        val builder = NotificationCompat.Builder(context, "delayed_notification")
-                .setContentTitle(title)
-                .setContentText(content)
-                .setAutoCancel(true)
-                .setSmallIcon(R.drawable.ic_launcher_foreground)
-                .setLargeIcon((context.resources.getDrawable(R.drawable.ic_launcher_foreground, theme) as BitmapDrawable).bitmap)
-                .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
-
-        val intent = Intent(context, this::class.java)
-        val activity = PendingIntent.getActivity(context, notificationId, intent, PendingIntent.FLAG_CANCEL_CURRENT)
-        builder.setContentIntent(activity)
-
-        val notification = builder.build()
-
-        val notificationIntent = Intent(context, MyNotificationPublisher::class.java)
-        notificationIntent.putExtra(MyNotificationPublisher.NOTIFICATION_ID, notificationId)
-        notificationIntent.putExtra(MyNotificationPublisher.NOTIFICATION, notification)
-        val pendingIntent = PendingIntent.getBroadcast(context, notificationId, notificationIntent, PendingIntent.FLAG_CANCEL_CURRENT)
-
-        val futureInMillis = SystemClock.elapsedRealtime() + delay
-        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, futureInMillis, pendingIntent)
-    }
 }

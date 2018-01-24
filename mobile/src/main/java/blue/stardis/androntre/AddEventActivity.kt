@@ -1,31 +1,25 @@
 package blue.stardis.androntre
 
 import android.app.*
+import android.content.Context
+import android.content.Intent
+import android.media.RingtoneManager
 import android.os.Bundle
 import android.support.design.widget.Snackbar
+import android.support.v4.app.NotificationManagerCompat
 import android.support.v7.app.AppCompatActivity
+import android.support.v7.app.NotificationCompat
+import android.util.Log
 import android.view.View
 import android.widget.AdapterView
 import android.widget.AdapterView.OnItemSelectedListener
 import android.widget.ArrayAdapter
-
-import android.content.Context
-import android.content.Intent
-import android.graphics.drawable.BitmapDrawable
-import android.media.RingtoneManager
-import android.os.SystemClock
-import android.support.v4.app.NotificationCompat
-import android.util.Log
-
-import kotlinx.android.synthetic.main.activity_add_event.*
-import kotlinx.android.synthetic.main.content_add_event.*
 import blue.stardis.androntre.dao.Event
 import blue.stardis.androntre.dao.EventDAO
-
-import java.util.*
+import kotlinx.android.synthetic.main.activity_add_event.*
+import kotlinx.android.synthetic.main.content_add_event.*
 import java.text.SimpleDateFormat
-import android.app.AlarmManager
-import android.app.PendingIntent
+import java.util.*
 
 
 class AddEventActivity : AppCompatActivity() {
@@ -72,7 +66,6 @@ class AddEventActivity : AppCompatActivity() {
                     myCalendar.get(Calendar.DAY_OF_MONTH)).show()
         }
 
-
         eventTime.setOnClickListener {
             TimePickerDialog(this,
                     { _, hour, minute ->
@@ -106,7 +99,7 @@ class AddEventActivity : AppCompatActivity() {
 
             if (notification) {
                 Log.d("DELAY", myCalendar.timeInMillis.toString())
-                scheduleNotification(applicationContext, myCalendar.timeInMillis, id, title, description)
+                scheduleNotification(myCalendar.timeInMillis, id, title, description)
             }
 
             val intent = Intent(applicationContext, MainActivity::class.java)
@@ -114,30 +107,28 @@ class AddEventActivity : AppCompatActivity() {
         }
     }
 
-    fun scheduleNotification(context: Context, delay: Long, notificationId: Int, title: String, content: String) {//delay is after how much time(in millis) from current time you want to schedule the notification
-        val builder = NotificationCompat.Builder(context)
+    fun scheduleNotification(delay: Long, notificationId: Int, title: String, content: String) {//delay is after how much time(in millis) from current time you want to schedule the notification
+        val notification = NotificationCompat.Builder(this)
+                .setSmallIcon(R.drawable.ic_add_black_24dp)
                 .setContentTitle(title)
                 .setContentText(content)
                 .setAutoCancel(true)
                 .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
                 .setVisibility(Notification.VISIBILITY_PUBLIC)
+                .build()
 
-        val intent = Intent(context, AddEventActivity::class.java)
-        val activity = PendingIntent.getActivity(context, notificationId, intent, PendingIntent.FLAG_CANCEL_CURRENT)
-        builder.setContentIntent(activity)
+        val notificationManagerCompat = NotificationManagerCompat.from(this)
+        notificationManagerCompat.notify(0, notification)
 
-        val notification = builder.build()
+        // DOES NOT WORK ???
+        val notificationIntent = Intent(this, MyNotificationPublisher::class.java)
+        notificationIntent.putExtra(MyNotificationPublisher.NOTIFICATION_CONTENT, content)
+        notificationIntent.putExtra(MyNotificationPublisher.NOTIFICATION_TITLE, title)
 
-        Log.d("notification", notification.toString())
+        Log.d("TEST", notificationIntent.extras.toString())
 
-        val notificationIntent = Intent(context, MyNotificationPublisher::class.java)
-        notificationIntent.putExtra(MyNotificationPublisher.NOTIFICATION_ID, notificationId)
-        notificationIntent.putExtra(MyNotificationPublisher.NOTIFICATION, notification)
-
-        val futureInMillis = SystemClock.elapsedRealtime() + delay
-        val alarmMgr: AlarmManager = this.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val alarmIntent = PendingIntent.getBroadcast(this, 0, notificationIntent, 0)
-
-        alarmMgr.setExact(AlarmManager.RTC_WAKEUP, futureInMillis, alarmIntent)
+        val alarmMgr: AlarmManager = this.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        alarmMgr.setExact(AlarmManager.RTC_WAKEUP, delay, alarmIntent)
     }
 }

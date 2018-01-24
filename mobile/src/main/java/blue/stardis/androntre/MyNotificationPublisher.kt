@@ -1,28 +1,38 @@
 package blue.stardis.androntre
 
 import android.app.Notification
-import android.app.NotificationManager
-import android.content.Intent
 import android.content.BroadcastReceiver
 import android.content.Context
-import android.os.Parcelable
+import android.content.Intent
+import android.media.RingtoneManager
+import android.support.v4.app.NotificationManagerCompat
+import android.support.v7.app.NotificationCompat
 import android.util.Log
 
 
 class MyNotificationPublisher : BroadcastReceiver() {
-
     override fun onReceive(context: Context, intent: Intent) {
+        Log.d("TEST3", intent.toString())
 
-        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val notificationTitre = intent.getStringExtra(NOTIFICATION_TITLE)
+        val notificationDesc = intent.getStringExtra(NOTIFICATION_CONTENT)
 
-        val notification = intent.getParcelableExtra<Parcelable>(NOTIFICATION) as Notification
-        val notificationId = intent.getIntExtra(NOTIFICATION_ID, 0)
-        Log.d("TEST", notificationId.toString())
-        notificationManager.notify(notificationId, notification)
+
+        val notification = NotificationCompat.Builder(context)
+                .setContentTitle(notificationTitre)
+                .setContentText(notificationDesc)
+                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setAutoCancel(true)
+                .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
+                .setVisibility(Notification.VISIBILITY_PUBLIC)
+                .build()
+
+        val notificationManagerCompat = NotificationManagerCompat.from(context)
+        notificationManagerCompat.notify(0, notification)
     }
 
     companion object {
-        var NOTIFICATION_ID = "notification_id"
-        var NOTIFICATION = "notification"
+        var NOTIFICATION_TITLE = "titre"
+        var NOTIFICATION_CONTENT = "description"
     }
 }
